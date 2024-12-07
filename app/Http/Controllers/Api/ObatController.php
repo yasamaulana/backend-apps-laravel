@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ObatResource;
 use App\Models\Obat;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ObatController extends Controller
 {
@@ -38,7 +39,7 @@ class ObatController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'nama_obat' => 'required|unique:obats|max:255',
             'kode_obat' => 'required|unique:obats|max:50',
             'jenis_obat' => 'required|max:50',
@@ -46,6 +47,14 @@ class ObatController extends Controller
             'harga' => 'required|numeric|min:0',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
         $obat = Obat::create($validated);
 
         return new ObatResource($obat);
@@ -74,14 +83,22 @@ class ObatController extends Controller
     {
         $obat = Obat::findOrFail($id);
 
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'nama_obat' => "required|unique:obats,nama_obat,$id",
             'kode_obat' => "required|unique:obats,kode_obat,$id",
-            'jenis_obat' => 'required|max:50',
+            'jenis_obat' => 'required',
             'stok' => 'required|integer|min:0',
             'harga' => 'required|numeric|min:0',
         ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
         $obat->update($validated);
 
         return new ObatResource($obat);
