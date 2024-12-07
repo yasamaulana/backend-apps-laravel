@@ -22,4 +22,21 @@ class AuthController extends Controller
             'user' => Auth::user()
         ]);
     }
+
+    public function logout()
+    {
+        try {
+            Auth::logout();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Successfully logged out'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to log out, please try again'
+            ], 500);
+        }
+    }
 }
